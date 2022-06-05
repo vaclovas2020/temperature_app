@@ -16,14 +16,20 @@ class TemperatureState extends State<TemperatureWidget> {
   }
 
   Future<List<Temperature>> fetchTemperature() async {
-    final response = await http.get(Uri.parse('https://weblang.dev/citytemp.json'));
-    if (response.statusCode == 200) {
-      List<Temperature> list = (json.decode(response.body) as List).map((i) =>
-          Temperature.fromJson(i)).toList();
-      return list;
-    }
-    else {
-      throw Exception('Cannot load temperature!');
+    try {
+      final client = http.Client();
+      final response = await client.get(
+          Uri.parse('https://weblang.dev/citytemp.json')).timeout(const Duration(seconds: 5));
+      if (response.statusCode == 200) {
+        List<Temperature> list = (json.decode(response.body) as List).map((i) =>
+            Temperature.fromJson(i)).toList();
+        return list;
+      }
+      else {
+        throw Exception('Cannot load temperature!');
+      }
+    } catch (e) {
+      return Future.error('Cannot load temperature!');
     }
   }
 
@@ -41,6 +47,13 @@ class TemperatureState extends State<TemperatureWidget> {
                       padding: const EdgeInsets.all(15.0),
                       child: Column(
                           children: [
+                            TextButton(
+                                onPressed: () {
+                                  print(context);
+                                },
+                                child: const Text("Test"),
+                              style: TextButton.styleFrom(primary: const Color.fromARGB(255, 255,255,255), backgroundColor: Colors.black38)
+                            ),
                             Text(temperatureList[i].city),
                             Text('${temperatureList[i].temperature} °${temperatureList[i].scale}')
                           ]
